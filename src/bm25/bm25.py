@@ -2,6 +2,7 @@ import pandas as pd
 from rank_bm25 import BM25Okapi
 from sklearn.metrics import accuracy_score
 from typing import List, Dict
+from loader import load_and_preprocess_data
 
 class BM25Retriever:
     def __init__(self, k1: float = 1.2, b: float = 0.75):
@@ -50,8 +51,21 @@ class BM25Evaluator:
         # return {'average_score': avg_success_at_10, 'top_10_results': top_10_results}
         return top_10_results , avg_success_at_10
 
-# bm25_retriever = BM25Retriever(k1=1.2, b=0.75)
-# bm25_retriever.fit(df_fact_checks_)
-# with open('BM25API.pkl', 'wb') as f:
-#     pickle.dump(bm25_retriever, f)
-# Initialize retriever with BM25 param
+# Define dataset path
+our_dataset_path = '.'
+
+# Load and preprocess data
+df_posts__train, df_posts__validate, df_posts__dev, df_fact_checks_ = load_and_preprocess_data(our_dataset_path)
+
+# Initialize BM25Retriever
+bm25_retriever = BM25Retriever()
+bm25_retriever.fit(df_fact_checks_)
+bm25_evaluator = BM25Evaluator(bm25_retriever)
+
+# Evaluate BM25Retriever
+top_10_results, avg_success_at_10 = bm25_evaluator.evaluate_success_at_10(df_posts__validate, k=10)
+
+print(f"Average success@10: {avg_success_at_10}")
+print(f"Top 10 results for each post: {top_10_results}")
+
+
